@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "Factory Control",
+  "short_name": "Factory",
+  "description": "Power, Cybersyn and shuttles for your Factorio save",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "handle_links": "preferred",
+  "launch_handler": { "client_mode": ["navigate-existing", "auto"] },
+  "orientation": "any",
+  "background_color": "#13120F",
+  "theme_color": "#1C1A16",
+  "icons": [
+    { "src": "pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "pwa/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

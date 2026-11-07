@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="fc-transport" content="rtc">
+  <meta name="theme-color" content="#1C1A16">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Factory Control</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="pwa/favicon-32.png">
+  <link rel="apple-touch-icon" href="pwa/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Titillium+Web:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body class="tab-groups">
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+      <span>Factory Control</span>
+    </div>
+    <nav class="surface-tabs" id="surfaceTabs" aria-label="Surfaces"></nav>
+    <label class="surface-select" id="surfaceSelectWrap">
+      <img id="surfaceSelectIcon" alt="">
+      <select id="surfaceSelect" aria-label="Surface"></select>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </label>
+    <div class="conn" id="conn"></div>
+    <button class="tool" id="backBtn" hidden title="Back to pairing (phone access)">Pairing</button>
+    <div class="tools">
+      <button class="tool install" id="installBtn" hidden title="Install as an app">Install</button>
+      <button class="tool" id="wakeBtn" hidden title="Keep the screen on" aria-label="Keep the screen on">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+      <button class="tool server" id="serverBtn" title="Pair with a computer" aria-label="Pair with a computer">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 6.5h.01M6 17.5h.01"/></svg>
+        <span class="host" id="serverHost"></span>
+      </button>
+    </div>
+    <div class="mobile-tabs" role="tablist">
+      <button data-tab="research" role="tab"><span class="long">Research</span><span class="short">Research</span></button>
+      <button data-tab="power" id="powerTab" role="tab" hidden><span class="long">Power</span><span class="short">Power</span></button>
+      <button data-tab="plants" id="plantsTab" role="tab"><span class="long">Power plants</span><span class="short">Plants</span></button>
+      <button data-tab="groups" id="groupsTab" role="tab"><span class="long">Power groups</span><span class="short">Groups</span></button>
+      <button data-tab="cyber" id="cyberTab" role="tab" hidden><span class="long">Cybersyn</span><span class="short">Cybersyn</span></button>
+      <button data-tab="shuttle" id="shuttleTab" role="tab" hidden><span class="long">Shuttle train</span><span class="short">Shuttle</span></button>
+      <button data-tab="repair" id="repairTab" role="tab" hidden><span class="long">Repair wards</span><span class="short">Repair</span></button>
+      <button data-tab="pedia" role="tab"><span class="long">Factoriopedia</span><span class="short">Pedia</span></button>
+    </div>
+  </header>
+  <div id="banner"></div>
+  <main class="body">
+    <section class="col power" id="power"></section>
+    <aside class="col side">
+      <div class="sec-research" id="research"></div>
+      <div class="sec-cyber" id="cyber"></div>
+      <div class="sec-shuttle" id="shuttle"></div>
+      <div class="sec-repair" id="repair"></div>
+      <div class="sec-pedia" id="pedia"></div>
+    </aside>
+  </main>
+  <div id="connectScreen" hidden>
+    <form class="connect-card" id="connectForm" autocomplete="off">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+        <span>Factory Control</span>
+      </div>
+      <p class="lead">Pair this device with the Factory Control app on your computer (same Wi-Fi).</p>
+      <p class="hint">In the app, scan the QR code with your camera, or paste the pairing link below. Then type the 6-digit code the app shows.</p>
+      <div id="scanWrap" hidden>
+        <video id="scanVideo" playsinline muted></video>
+        <div class="hint">Point the camera at the QR code in the app on your computer.</div>
+        <button type="button" class="primary ghost" id="scanCancel">Cancel</button>
+      </div>
+      <label class="field"><span>Pairing link</span>
+        <div class="link-row">
+          <input id="linkInput" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…#fc=…">
+          <button type="button" class="scan-btn" id="scanBtn">Scan QR</button>
+        </div>
+      </label>
+      <label class="field"><span>Code shown on the computer</span>
+        <input id="codeInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="123456">
+      </label>
+      <label class="field"><span>Name of this device</span>
+        <input id="nameInput" type="text" maxlength="40">
+      </label>
+      <button class="primary" id="connectGo" type="submit">Pair</button>
+      <div id="connectMsg" role="status"></div>
+      <div id="recentList"></div>
+      <button class="primary ghost" id="installBtn2" type="button" hidden>Install as an app</button>
+      <div id="appStatus"></div>
+    </form>
+  </div>
+  <div id="popover" hidden></div>
+  <div id="toast" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
