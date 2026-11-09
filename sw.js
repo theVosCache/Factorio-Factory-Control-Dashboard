@@ -1,6 +1,6 @@
 // Factory Control service worker: lets the installed app start without the network and
 // pick a server. Live data (API, events, icons) always goes to the network.
-const SHELL = 'fc-shell-v11';
+const SHELL = 'fc-shell-v12';
 const FONTS = 'fc-fonts-v1';
 const FILES = ['./', 'index.html', 'app.css', 'app.js', 'manifest.webmanifest', 'shared/protocol.js', 'vendor/jsQR.js',
   'transports/index.js', 'transports/rtc.js', 'transports/ipc.js',
