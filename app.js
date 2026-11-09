@@ -859,7 +859,9 @@ function renderPopover() {
           <div class="picker">${Array.from({ length: 10 }, (_, i) => `<button class="${i === g.group ? 'sel' : ''}" data-act="move" data-group="${i}">${i}</button>`).join('')}</div>
           <div class="label">Override</div>
           <div>${tri(s.override, 'unit-ov', '')}</div>
-          <div class="note">Wins over the group override and the breaker.</div>`;
+          <div class="note">Wins over the group override and the breaker.</div>
+          <div class="label">Locate</div>
+          <div class="qbtns"><button data-act="remote-ping" title="Ping ${s.remote_count === 1 ? 'this remote' : 'these remotes'} in the game, like a map ping">◎ Ping in game</button></div>`;
       }
     } else if (ui.pop.kind === 'group') {
       const g = st.groups[ui.pop.group];
@@ -1016,6 +1018,13 @@ document.addEventListener('click', async (ev) => {
     pedia.group = t.dataset.group;
     localStorage.setItem('fc.pdGroup', pedia.group);
     renderPedia();
+  } else if (act === 'remote-ping') {
+    if (!data?.connected) return;
+    const st = data?.bySurface?.[ui.surface]?.status;
+    const f = st && findSignal(st, ui.pop?.key);
+    if (!f) return;
+    const res = await api('set', { op: 'ping_remotes', units: f.s.remotes }, true);
+    toast(res.ok ? 'Pinged in the game' : (res.error || 'Ping failed'), !res.ok);
   } else if (act === 'ward-ping') {
     if (!data?.connected) return;
     const res = await api('set', { op: 'ping_ward', unit: Number(t.dataset.unit) }, true);
