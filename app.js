@@ -136,6 +136,7 @@ function loadedMods() {
     cybersyn: m ? !!m.cybersyn : !!data?.cybersynAvailable || surfaces.some((s) => s.cybersyn_stops > 0),
     shuttle: m ? !!m.shuttle : surfaces.some((s) => s.entities?.pax > 0),
     repair: !!data?.repair,
+    silo: !!data?.silos,
   };
 }
 // The desktop app has room for both: one "Power" tab shows the power groups and the power plants together.
@@ -151,7 +152,8 @@ function syncTabs() {
   $('cyberTab').hidden = !mods.cybersyn;
   $('shuttleTab').hidden = !mods.shuttle;
   $('repairTab').hidden = !mods.repair;
-  const ok = { cyber: mods.cybersyn, shuttle: mods.shuttle, repair: mods.repair };
+  $('siloTab').hidden = !mods.silo;
+  const ok = { cyber: mods.cybersyn, shuttle: mods.shuttle, repair: mods.repair, silo: mods.silo };
   if (ok[ui.tab] === false) ui.tab = 'research';
 }
 
@@ -580,6 +582,79 @@ function renderRepair() {
     </div>`;
   }).join('');
   setHTML(el, warn + cards);
+}
+
+/* ---------------- rocket silos ---------------- */
+// One card per silo controller (factory-control 0.4.1+): status, manifest, launch rules, auto launch and Launch now.
+const SI_STATE = { ready: ['READY', ''], loading: ['LOADING', 'info'], no_pad: ['NO SILO', 'bad'], duplicate: ['DUPLICATE', 'bad'] };
+const SI_KIND = { manifest: 'Manifest loaded', cargo_full: 'Cargo full', fuel_full: 'Fuel full', rocket_ready: 'Rocket complete' };
+const siSig = (sig) => (sig ? `<span class="si-sig"><img src="${icon(sig)}" alt="">${sig.type === 'virtual' && /^signal-/.test(sig.name) ? esc(sig.name.replace(/^signal-/, '')) : esc(pretty(sig.name))}</span>` : '<span class="hint">no signal</span>');
+const siRule = (r, i) => {
+  const text = r.kind === 'signal'
+    ? `${siSig(r.signal)} <b>${esc(r.op || '')}</b> ${r.rhs_signal ? siSig(r.rhs_signal) : `<span class="mono">${esc(r.rhs_const ?? 0)}</span>`}`
+    : esc(SI_KIND[r.kind] || r.kind);
+  return `<div class="si-rule ${r.result ? 'on' : ''}">${i > 0 ? `<span class="si-join">${esc(r.join || 'and')}</span>` : ''}<span class="si-dot"></span>${text}</div>`;
+};
+const siMissing = (m) => {
+  if (!m) return '';
+  const out = [];
+  if (m.destination) out.push('no destination set in the silo');
+  if (m.sections) out.push(`${m.sections} more sections`);
+  if (m.capsules) out.push('a space capsule');
+  if (m.fuel) out.push(`${fmtCount(m.fuel)} more fuel`);
+  return out.length ? `Needs: ${out.join(', ')}` : '';
+};
+
+function renderSilo() {
+  const el = $('silo');
+  const si = data?.silos;
+  if (!si) {
+    setHTML(el, '');
+    return;
+  }
+  const list = si.silos.filter((x) => x.surface === ui.surface);
+  if (!list.length) {
+    setHTML(el, '<div class="card empty mobile-only">No silo controllers on this surface.<br>Build a <b>Silo controller</b> next to a cargo rocket silo and wire it to the silo.</div>');
+    return;
+  }
+  setHTML(el, list.map((x) => {
+    const [st, stCls] = SI_STATE[x.status] || [String(x.status).toUpperCase(), 'muted'];
+    const ico = x.icon || { type: 'virtual', name: 'se-cargo-rocket' };
+    const fuelFrac = x.required_fuel > 0 ? Math.min(1, x.fuel / x.required_fuel) : 0;
+    const secFrac = Math.min(1, x.sections / (x.sections_needed || 100));
+    const slotsUsed = Math.max(0, x.capacity - x.empty_slots);
+    const manifest = x.manifest.map((m) => {
+      const frac = m.amount > 0 ? Math.min(1, m.have / m.amount) : 1;
+      return `<div class="si-m ${m.remaining > 0 ? '' : 'done'}"><img src="${icon({ type: 'item', name: m.name })}" alt="">
+        <div class="si-mbody"><div class="si-mname">${esc(pretty(m.name))}<span class="mono">${fmtCount(m.have)} / ${fmtCount(m.amount)}</span></div>
+          <div class="rw-bar"><span class="fill" style="width:${Math.round(frac * 100)}%"></span></div></div>
+        <span class="si-rem mono" title="Still to load (output on the circuit)">${m.remaining > 0 ? `−${fmtCount(m.remaining)}` : '✓'}</span></div>`;
+    }).join('');
+    const missing = siMissing(x.missing);
+    const rules = x.rules.map(siRule).join('');
+    const rulesPill = x.rules.length ? (x.rules_result ? ['MET', ''] : ['NOT MET', 'muted']) : ['NONE', 'muted'];
+    return `<div class="card pad si">
+      <div class="rw-head"><button class="rw-ping" data-act="silo-ping" data-unit="${x.unit}" title="Ping this silo controller in the game" aria-label="Ping this silo controller in the game">${sigBox(ico)}</button>
+        <div class="txt"><div class="title">${esc(x.name || 'Silo controller')}</div><div class="hint">${Math.round(x.position.x)}, ${Math.round(x.position.y)}${x.green ? ' · sending green' : ''}</div></div>
+        <span class="pill ${stCls}">${st}</span></div>
+      ${missing ? `<div class="hint si-missing">${esc(missing)}</div>` : ''}
+      ${!x.wired && x.status !== 'no_pad' ? '<div class="hint si-warn">Not wired to a circuit network: nothing reaches the silo.</div>' : ''}
+      <div class="rw-stats si-stats">
+        <div><span class="k">Sections</span><span class="v">${x.sections}<small>/ ${x.sections_needed}</small></span><div class="rw-bar"><span class="fill" style="width:${Math.round(secFrac * 100)}%"></span></div></div>
+        <div><span class="k">Capsule</span><span class="v">${x.capsules}<small>/ 1</small></span></div>
+        <div><span class="k">Fuel</span><span class="v">${fmtCount(Math.round(x.fuel))}<small>/ ${fmtCount(Math.round(x.required_fuel))}</small></span><div class="rw-bar"><span class="fill" style="width:${Math.round(fuelFrac * 100)}%"></span></div></div>
+        <div title="Used / total stacks of the rocket"><span class="k">Cargo slots</span><span class="v">${slotsUsed}<small>/ ${x.capacity}</small></span></div>
+      </div>
+      <div class="si-h">Manifest <span class="hint">${x.manifest.length ? `${x.manifest_slots} slots wanted` : ''}</span></div>
+      ${manifest || '<div class="hint">Nothing requested. Add items in the controller window in the game.</div>'}
+      <div class="si-h">Launch rules <span class="pill ${rulesPill[1]}">${rulesPill[0]}</span></div>
+      ${rules || '<div class="hint">No rules: only Launch now sends green.</div>'}
+      <div class="si-actions">
+        <button class="si-arm ${x.armed ? 'on' : ''}" data-act="silo-armed" data-unit="${x.unit}" data-value="${x.armed ? 0 : 1}" title="When on, green is sent while the rules are met">${x.armed ? 'Auto launch ON' : 'Auto launch OFF'}</button>
+        <button class="si-go" data-act="silo-override" data-unit="${x.unit}" ${x.override_left > 0 ? 'disabled' : ''} title="Send green for one second, regardless of the rules. The silo only launches with full fuel, 100 sections, a capsule and a valid destination.">${x.override_left > 0 ? 'Sending green…' : 'Launch now'}</button>
+      </div>
+    </div>`;
+  }).join(''));
 }
 
 /* ---------------- research ---------------- */
@@ -1029,6 +1104,13 @@ document.addEventListener('click', async (ev) => {
     if (!data?.connected) return;
     const res = await api('set', { op: 'ping_ward', unit: Number(t.dataset.unit) }, true);
     toast(res.ok ? 'Pinged in the game' : (res.error || 'Ping failed'), !res.ok);
+  } else if (act === 'silo-ping' || act === 'silo-override' || act === 'silo-armed') {
+    if (!data?.connected) return;
+    if (act === 'silo-override' && !confirm('Send the green launch signal now (for one second), regardless of the rules?')) return;
+    const op = { 'silo-ping': 'silo_ping', 'silo-override': 'silo_override', 'silo-armed': 'silo_armed' }[act];
+    const res = await api('set', { op, unit: Number(t.dataset.unit), value: t.dataset.value === '1' }, true);
+    const msg = res.message ? res.message.charAt(0).toUpperCase() + res.message.slice(1) : (act === 'silo-ping' ? 'Pinged in the game' : 'Done');
+    toast(res.ok ? msg : (res.error || 'Failed'), !res.ok);
   } else if (act === 'chip-view') {
     ui.chipView = t.dataset.value;
     localStorage.setItem('fc.chipView', ui.chipView);
@@ -1083,6 +1165,7 @@ function render() {
   renderCyber();
   renderShuttle();
   renderRepair();
+  renderSilo();
   renderResearch();
   renderPedia();
   // Don't rebuild the popover while the breaker slider is being dragged.

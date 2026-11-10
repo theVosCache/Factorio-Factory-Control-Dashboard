@@ -3,7 +3,12 @@
 Factory Control dashboard (PWA). Newest first. Versions are the service worker shell (`SHELL` in `sw.js`):
 bump it on every deploy so installed apps pick up the new files. Every push to `main` deploys to GitHub Pages.
 
-## Unreleased
+## v13 (2026-11-11)
+- New **Rocket silos** tab (while Space Exploration and factory-control 0.4.1+ are loaded): one card per silo
+  controller on the surface with its status (loading / ready, and what the rocket still needs), sections, capsule,
+  fuel and cargo slots, the manifest with what is still to load, the launch rules and whether they are met.
+  Buttons: Auto launch on/off, **Launch now** (green for one second, after a confirmation) and ping in the game
+  (the controller's icon). Ported from the old dashboard, adapted to 0.4.1 (no "launching" state, no cancel).
 - README and CHANGELOG: hosted on GitHub Pages, edited as the `ui/` submodule of the companion app.
 
 ## v12 (2026-11-09)

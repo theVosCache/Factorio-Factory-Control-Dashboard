@@ -90,11 +90,11 @@ img { image-rendering: auto; }
 .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .col.power { flex: 1; }
 .col.side { width: 440px; flex: none; }
-.sec-shuttle, .sec-cyber, .sec-research, .sec-repair, .sec-pedia { display: flex; flex-direction: column; gap: 20px; }
-.sec-shuttle:empty, .sec-research:empty, .sec-repair:empty, .sec-cyber:empty, .sec-pedia:empty { display: none; }
+.sec-shuttle, .sec-cyber, .sec-research, .sec-repair, .sec-silo, .sec-pedia { display: flex; flex-direction: column; gap: 20px; }
+.sec-shuttle:empty, .sec-research:empty, .sec-repair:empty, .sec-silo:empty, .sec-cyber:empty, .sec-pedia:empty { display: none; }
 @media (min-width: 901px) {
   /* Only the mobile "no pax stations" note: hide the whole section so it adds no gap. */
-  .sec-shuttle:has(> .mobile-only:only-child), .sec-research:has(> .mobile-only:only-child), .sec-repair:has(> .mobile-only:only-child) { display: none; }
+  .sec-shuttle:has(> .mobile-only:only-child), .sec-research:has(> .mobile-only:only-child), .sec-repair:has(> .mobile-only:only-child), .sec-silo:has(> .mobile-only:only-child) { display: none; }
 }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
 .card.pad { padding: 20px; }
@@ -544,3 +544,40 @@ body.tab-power .sec-pedia { display: none; }
 #scanWrap { display: flex; flex-direction: column; gap: 10px; }
 #scanWrap[hidden] { display: none; }
 #scanVideo { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; background: #000; }
+
+/* ---------- Rocket silos tab: shown on its own like the other optional tabs (phone and installed app) ---------- */
+@media (max-width: 900px) {
+  body.tab-silo .mobile-tabs [data-tab=silo] { background: var(--panel-2); color: var(--text); }
+  body.tab-silo .col.power, body.tab-silo .sec-shuttle, body.tab-silo .sec-cyber, body.tab-silo .sec-research, body.tab-silo .sec-repair,
+  body:not(.tab-silo) .sec-silo { display: none; }
+}
+@media (min-width: 901px) {
+  body.app.tab-silo .mobile-tabs [data-tab=silo] { background: var(--panel-2); color: var(--text); }
+  body.app.tab-silo .col.power, body.app.tab-silo .sec-shuttle, body.app.tab-silo .sec-cyber, body.app.tab-silo .sec-research, body.app.tab-silo .sec-repair,
+  body.app:not(.tab-silo) .sec-silo { display: none; }
+  body.app.tab-silo .sec-silo:has(> .mobile-only:only-child) { display: flex; }
+}
+.si-stats .rw-bar { margin-top: 4px; }
+.si-h { display: flex; align-items: center; gap: 10px; margin: 18px 0 8px; font-weight: 700; }
+.si-h .pill { margin-left: auto; }
+.si-missing { margin-top: 12px; color: var(--warn); }
+.si-warn { margin-top: 8px; color: var(--bad); }
+.si-m { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.si-m img { width: 24px; height: 24px; }
+.si-mbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.si-mname { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.si-rem { min-width: 52px; text-align: right; color: var(--warn); }
+.si-m.done .si-rem { color: var(--ok); }
+.si-rule { display: flex; align-items: center; gap: 8px; padding: 3px 0; color: var(--text-2); flex-wrap: wrap; }
+.si-rule.on { color: var(--text); }
+.si-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); flex: none; }
+.si-rule.on .si-dot { background: var(--ok); }
+.si-join { text-transform: uppercase; font-size: 11px; color: var(--text-3); width: 28px; }
+.si-sig { display: inline-flex; align-items: center; gap: 4px; background: var(--panel-2); border-radius: 6px; padding: 1px 8px 1px 2px; }
+.si-sig img { width: 20px; height: 20px; }
+.si-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.si-actions button { padding: 9px 14px; border-radius: 8px; font-weight: 700; background: var(--panel-2); color: var(--text); border: 1px solid transparent; cursor: pointer; }
+.si-actions .si-arm.on { color: var(--ok); border-color: #5BBF6A66; }
+.si-actions .si-go { color: var(--bad); border-color: #E4574C66; margin-left: auto; }
+.si-actions .si-go:disabled { opacity: .6; cursor: default; }
+@media (max-width: 900px) { .si-stats { grid-template-columns: 1fr 1fr; } }
